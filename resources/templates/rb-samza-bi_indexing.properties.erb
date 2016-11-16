@@ -1,0 +1,160 @@
+# Copyright (c) 2015 ENEO Tecnologia S.L.
+# This file is part of redBorder.
+# redBorder is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# redBorder is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License License for more details.
+# You should have received a copy of the GNU Affero General Public License License
+# along with redBorder. If not, see <http://www.gnu.org/licenses/>.
+
+# Job
+job.factory.class=org.apache.samza.job.yarn.YarnJobFactory
+job.name=indexing
+job.coordinator.system=kafka
+job.coordinator.replication.factor=<%= @coordinator_replication_factor %>
+
+# YARN
+yarn.package.path=file://<%= @rb_samza_bi_targz %>
+yarn.container.count=<%= @num_containers %>
+yarn.container.memory.mb=<%= @memory_per_container %>
+yarn.queue=default
+
+# Task
+task.class=net.redborder.samza.tasks.IndexingStreamTask
+task.opts=-Dsamza.application.name=indexing -Xmx<%= @memory_per_container %>m -Xms<%= @memory_per_container %>m
+task.drop.deserialization.errors=true
+
+task.checkpoint.factory=org.apache.samza.checkpoint.kafka.KafkaCheckpointManagerFactory
+task.checkpoint.system=kafka
+task.checkpoint.replication.factor=<%= @checkpoint_replication_factor %>
+task.window.ms=60000
+
+redborder.indexing.eventsPerTask=2000
+redborder.indexing.upPercent=0.8
+redborder.indexing.downPercent=0.2
+
+# Kafka
+systems.kafka.samza.factory=org.apache.samza.system.kafka.KafkaSystemFactory
+systems.kafka.samza.key.serde=string
+systems.kafka.samza.msg.serde=json
+systems.kafka.consumer.zookeeper.connect=zookeeper.service:2181
+systems.kafka.producer.bootstrap.servers=kafka.service:9092
+
+# Serializers
+serializers.registry.string.class=org.apache.samza.serializers.StringSerdeFactory
+serializers.registry.json.class=org.apache.samza.serializers.JsonSerdeFactory
+serializers.registry.metrics.class=org.apache.samza.serializers.MetricsSnapshotSerdeFactory
+
+<% if @indexing_topics.include?("rb_loc_post") %>
+systems.druid_location.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_location.beam.factory=net.redborder.samza.indexing.tranquility.LocationBeamFactory
+systems.druid_location.beam.batchSize=1000
+systems.druid_location.beam.maxPendingBatches=1
+systems.druid_location.beam.indexGranularity=60000
+
+redborder.beam.location.partitions=1
+redborder.beam.location.replicas=1
+redborder.beam.location.maxrows=60000
+redborder.beam.location.intermediatePersist=PT20m
+<% end %>
+
+<% if @indexing_topics.include?("rb_monitor") %>
+systems.druid_monitor.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_monitor.beam.factory=net.redborder.samza.indexing.tranquility.MonitorBeamFactory
+systems.druid_monitor.beam.batchSize=1000
+systems.druid_monitor.beam.maxPendingBatches=2
+systems.druid_monitor.beam.indexGranularity=60000
+
+# redBorder tranquility configuration (monitor)
+redborder.beam.monitor.partitions=1
+redborder.beam.monitor.replicas=1
+redborder.beam.monitor.maxrows=60000
+redborder.beam.monitor.intermediatePersist=PT20m
+<% end %>
+	
+<% if @indexing_topics.include?("rb_flow_post") %>
+systems.druid_flow.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_flow.beam.factory=net.redborder.samza.indexing.tranquility.FlowBeamFactory
+systems.druid_flow.beam.batchSize=1000
+systems.druid_flow.beam.maxPendingBatches=2
+systems.druid_flow.beam.indexGranularity=60000
+
+redborder.beam.flow.partitions=1
+redborder.beam.flow.replicas=1
+redborder.beam.flow.maxrows=60000
+redborder.beam.flow.intermediatePersist=PT20m
+<% end %>
+
+<% if @indexing_topics.include?("rb_state_post") %>
+systems.druid_state.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_state.beam.factory=net.redborder.samza.indexing.tranquility.StateBeamFactory
+systems.druid_state.beam.batchSize=1000
+systems.druid_state.beam.maxPendingBatches=2
+systems.druid_state.beam.indexGranularity=60000
+
+redborder.beam.state.partitions=1
+redborder.beam.state.replicas=1
+redborder.beam.state.maxrows=60000
+redborder.beam.state.intermediatePersist=PT20m
+<% end %>
+
+<% if @indexing_topics.include?("rb_social") %>
+systems.druid_social.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_social.beam.factory=net.redborder.samza.indexing.tranquility.SocialBeamFactory
+systems.druid_social.beam.batchSize=1000
+systems.druid_social.beam.maxPendingBatches=2
+systems.druid_social.beam.indexGranularity=60000
+
+redborder.beam.hashtag.partitions=1
+redborder.beam.hashtag.replicas=1
+redborder.beam.hashtag.maxrows=60000
+redborder.beam.hashtag.intermediatePersist=PT20m
+<% end %>
+
+<% if @indexing_topics.include?("rb_hashtag") %>
+systems.druid_hashtag.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_hashtag.beam.factory=net.redborder.samza.indexing.tranquility.HashtagBeamFactory
+systems.druid_hashtag.beam.batchSize=1000
+systems.druid_hashtag.beam.maxPendingBatches=2
+systems.druid_hashtag.beam.indexGranularity=60000
+
+redborder.beam.social.partitions=1
+redborder.beam.social.replicas=1
+redborder.beam.social.maxrows=60000
+redborder.beam.social.intermediatePersist=PT20m
+<% end %>
+
+<% if @indexing_topics.include?("rb_event_post") %>
+systems.druid_event.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
+systems.druid_event.beam.factory=net.redborder.samza.indexing.tranquility.EventBeamFactory
+systems.druid_event.beam.batchSize=1000
+systems.druid_event.beam.maxPendingBatches=2
+systems.druid_event.beam.indexGranularity=60000
+
+redborder.beam.event.partitions=1
+redborder.beam.event.replicas=1
+redborder.beam.event.maxrows=60000
+redborder.beam.event.intermediatePersist=PT20m
+<% end %>
+
+#TODO
+redborder.indexing.autoscaling.topics=<%= @autoscaling_topics.join(",") %>
+<% if @autoscaling_topics.include?("rb_flow_post") %>
+redborder.kafka.rb_flow_post.partitions=<%= @kafka_topics.has_key?("rb_flow_post") ? @kafka_topics["rb_flow_post"]["partitions"] : 1 %>
+<% end %>
+<% if @autoscaling_topics.include?("rb_event_post") %>
+redborder.kafka.rb_event_post.partitions=<%= @kafka_topics.has_key?("rb_event_post") ? @kafka_topics["rb_event_post"]["partitions"] : 1 %>
+<% end %>
+
+# Metrics
+metrics.reporters=snapshot
+metrics.reporter.snapshot.class=net.redborder.samza.metrics.MetricsRedBorderFactory
+metrics.reporter.snapshot.stream=kafka.rb_metrics
+
+net.redborder.indexing.useNamespace=<%= @use_namespace %>
+
+task.inputs=<%= @indexing_topics.map{|x| "kafka.#{x}"}.join(",") %>
