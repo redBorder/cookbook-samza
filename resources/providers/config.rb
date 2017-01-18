@@ -59,7 +59,7 @@ action :add do #Usually used to install and configure something
     # Templates
     ##################
 
-    #INDEXING  
+    #INDEXING
     template "#{config_dir}/indexing.properties" do
       source "rb-samza-bi_indexing.properties.erb"
       owner "root"
@@ -92,7 +92,7 @@ action :add do #Usually used to install and configure something
       mode 0644
       cookbook "samza"
       retries 2
-      variables(:rb_samza_bi_targz => rb_samza_bi_targz,                
+      variables(:rb_samza_bi_targz => rb_samza_bi_targz,
                 :num_containers => num_containers,
                 :memory_per_container => memory_per_container,
                 :enrichment_topics => enrichment_topics,
@@ -102,7 +102,7 @@ action :add do #Usually used to install and configure something
                 :psql_uri => psql_uri,
                 :psql_user => psql_user,
                 :psql_password => psql_password)
-    end    
+    end
     execute 'start_enrichment_task' do
       command "rb_samza.sh -e -t enrichment"
       timeout 60
@@ -116,21 +116,21 @@ action :add do #Usually used to install and configure something
   end
 end
 
-action :remove do 
+action :remove do
   begin
     config_dir = new_resource.config_dir
 
     #####################
     # Package uninstall
     #####################
-    yum_package 'redborder-samza-bi' do
-      action :remove
-    end
+    #yum_package 'redborder-samza-bi' do
+    #  action :remove
+    #end
 
-    directory config_dir do
-      action :delete
-      recursive true
-    end
+    #directory config_dir do
+    #  action :delete
+    #  recursive true
+    #end
 
     Chef::Log.info("Samza cookbook has been processed")
   rescue => e
