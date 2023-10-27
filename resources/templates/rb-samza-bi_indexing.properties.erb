@@ -102,32 +102,6 @@ redborder.beam.state.maxrows=60000
 redborder.beam.state.intermediatePersist=PT20m
 <% end %>
 
-<% if @indexing_topics.include?("rb_social") %>
-systems.druid_social.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
-systems.druid_social.beam.factory=net.redborder.samza.indexing.tranquility.SocialBeamFactory
-systems.druid_social.beam.batchSize=1000
-systems.druid_social.beam.maxPendingBatches=2
-systems.druid_social.beam.indexGranularity=60000
-
-redborder.beam.hashtag.partitions=1
-redborder.beam.hashtag.replicas=1
-redborder.beam.hashtag.maxrows=60000
-redborder.beam.hashtag.intermediatePersist=PT20m
-<% end %>
-
-<% if @indexing_topics.include?("rb_hashtag") %>
-systems.druid_hashtag.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
-systems.druid_hashtag.beam.factory=net.redborder.samza.indexing.tranquility.HashtagBeamFactory
-systems.druid_hashtag.beam.batchSize=1000
-systems.druid_hashtag.beam.maxPendingBatches=2
-systems.druid_hashtag.beam.indexGranularity=60000
-
-redborder.beam.social.partitions=1
-redborder.beam.social.replicas=1
-redborder.beam.social.maxrows=60000
-redborder.beam.social.intermediatePersist=PT20m
-<% end %>
-
 <% if @indexing_topics.include?("rb_event_post") %>
 systems.druid_event.samza.factory=com.metamx.tranquility.samza.BeamSystemFactory
 systems.druid_event.beam.factory=net.redborder.samza.indexing.tranquility.EventBeamFactory

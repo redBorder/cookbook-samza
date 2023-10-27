@@ -36,5 +36,7 @@ install -D -m 0644 README.md %{buildroot}/var/chef/cookbooks/samza/README.md
 %doc
 
 %changelog
+* Fri Sep 22 2023 Miguel Negrón <manegron@redborder.com> - 2.0.0-1
+- Remove social
 * Tue Nov 08 2016 Carlos J. Mateos <cjmateos@redborder.com> - 1.0.0-1
 - first spec version
